@@ -9,4 +9,10 @@ urlpatterns = [
     #employee
     path('employee/', views.employee_list),
     path('employee/<int:pk>/', views.employee_detail),
+    
+    #employee profile
+    path('profiles/', views.employee_profile_list),
+    
+    #project
+    path('projects/', views.project_list)
 ]
