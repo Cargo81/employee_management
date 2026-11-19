@@ -1,12 +1,17 @@
 from django.shortcuts import get_object_or_404
-from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.decorators import (
+    api_view,
+    permission_classes
+)
+from rest_framework.permissions import IsAuthenticated, AllowAny
 
 from .models import Department,Employee,EmployeeProfile,Project
-from .serializers import DepartmentSerializer,EmployeeSerializer,EmployeeProfileSerializer,ProjectSerializer
+from .serializers import DepartmentSerializer,EmployeeSerializer,EmployeeProfileSerializer,ProjectSerializer,UserRegistrationSerializer
 
 @api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
 def department_list(request):
     if request.method == 'GET':
         department = Department.objects.all()
@@ -26,6 +31,7 @@ def department_list(request):
     
 #department details API
 @api_view(['GET', 'PUT', 'DELETE'])
+@permission_classes([IsAuthenticated])
 def department_detail(request, pk):
     department = get_object_or_404(Department, pk=pk)
     
@@ -50,6 +56,7 @@ def department_detail(request, pk):
         
 #employee CRUD API
 @api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
 def employee_list(request):
     if request.method == 'GET':
         employees = Employee.objects.select_related('department').all()
@@ -66,6 +73,7 @@ def employee_list(request):
     
 #employee detail API:
 @api_view(['GET', 'PUT', 'DELETE'])
+@permission_classes([IsAuthenticated])
 def employee_detail(request, pk):
     employee = get_object_or_404(Employee, pk=pk)
     
@@ -91,6 +99,7 @@ def employee_detail(request, pk):
         
 #employee profile API (one-to-one)
 @api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
 def employee_profile_list(request):
     if request.method == 'GET':
         profiles = EmployeeProfile.objects.select_related('employee').all()
@@ -108,6 +117,7 @@ def employee_profile_list(request):
     
 #project api(many-to-many)
 @api_view(['GET' 'POST'])
+@permission_classes([IsAuthenticated])
 def project_list(request):
     
     if request.method == 'GET':
@@ -123,3 +133,25 @@ def project_list(request):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def register_user(request):
+
+    serializer = UserRegistrationSerializer(data=request.data)
+
+    if serializer.is_valid():
+        user = serializer.save()
+
+        return Response(
+            {
+                'message': 'User registered successfully',
+                'user': UserRegistrationSerializer(user).data
+            },
+            status=status.HTTP_201_CREATED
+        )
+
+    return Response(
+        serializer.errors,
+        status=status.HTTP_400_BAD_REQUEST
+    )

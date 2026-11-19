@@ -3,6 +3,7 @@ from .models import (
     Department, Employee, EmployeeProfile
     ,Project
 )
+from django.contrib.auth.models import User
 
 class DepartmentSerializer(serializers.ModelSerializer):
     class Meta:
@@ -39,3 +40,21 @@ class ProjectSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
         fields = '__all__'
+        
+class UserRegistrationSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(
+        write_only=True,
+        min_length=8
+    )
+    
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'email', 'password']
+        
+    def create(self, validated_data):
+        user = User.objects.create_user(
+            username=validated_data['username'],
+            email=validated_data['email'],
+            password=validated_data['password']
+        )
+        return user

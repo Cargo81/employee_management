@@ -14,5 +14,7 @@ urlpatterns = [
     path('profiles/', views.employee_profile_list),
     
     #project
-    path('projects/', views.project_list)
+    path('projects/', views.project_list),
+    
+    path('register/', views.register_user, name='register_user'),
 ]
