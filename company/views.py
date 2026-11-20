@@ -133,7 +133,9 @@ def project_list(request):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+
+
+#user registration   
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def register_user(request):
