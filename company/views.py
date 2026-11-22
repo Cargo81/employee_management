@@ -116,7 +116,7 @@ def employee_profile_list(request):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 #project api(many-to-many)
-@api_view(['GET' 'POST'])
+@api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
 def project_list(request):
     
