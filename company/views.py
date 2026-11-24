@@ -9,9 +9,10 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 
 from .models import Department,Employee,EmployeeProfile,Project
 from .serializers import DepartmentSerializer,EmployeeSerializer,EmployeeProfileSerializer,ProjectSerializer,UserRegistrationSerializer
+from .permissions import IsAdminOrHR, IsAdmin, IsAdminHRReadOnly
 
 @api_view(['GET', 'POST'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAdminHRReadOnly])
 def department_list(request):
     if request.method == 'GET':
         department = Department.objects.all()
@@ -31,7 +32,7 @@ def department_list(request):
     
 #department details API
 @api_view(['GET', 'PUT', 'DELETE'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAdminHRReadOnly])
 def department_detail(request, pk):
     department = get_object_or_404(Department, pk=pk)
     
@@ -56,7 +57,7 @@ def department_detail(request, pk):
         
 #employee CRUD API
 @api_view(['GET', 'POST'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAdminHRReadOnly])
 def employee_list(request):
     if request.method == 'GET':
         employees = Employee.objects.select_related('department').all()
@@ -73,7 +74,7 @@ def employee_list(request):
     
 #employee detail API:
 @api_view(['GET', 'PUT', 'DELETE'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAdminHRReadOnly])
 def employee_detail(request, pk):
     employee = get_object_or_404(Employee, pk=pk)
     
@@ -99,7 +100,7 @@ def employee_detail(request, pk):
         
 #employee profile API (one-to-one)
 @api_view(['GET', 'POST'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAdminHRReadOnly])
 def employee_profile_list(request):
     if request.method == 'GET':
         profiles = EmployeeProfile.objects.select_related('employee').all()
@@ -117,7 +118,7 @@ def employee_profile_list(request):
     
 #project api(many-to-many)
 @api_view(['GET', 'POST'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAdminHRReadOnly])
 def project_list(request):
     
     if request.method == 'GET':
