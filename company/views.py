@@ -116,6 +116,39 @@ def employee_profile_list(request):
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
+# Employee Profile Detail API
+@api_view(['GET', 'PUT', 'DELETE'])
+@permission_classes([IsAdminHRReadOnly])
+def employee_profile_detail(request, pk):
+
+    profile = get_object_or_404(
+        EmployeeProfile,
+        employee_id=pk
+    )
+
+    if request.method == 'GET':
+        serializer = EmployeeProfileSerializer(profile)
+        return Response(serializer.data)
+
+    elif request.method == 'PUT':
+        serializer = EmployeeProfileSerializer(
+            profile,
+            data=request.data
+        )
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+
+        return Response(
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    elif request.method == 'DELETE':
+        profile.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    
 #project api(many-to-many)
 @api_view(['GET', 'POST'])
 @permission_classes([IsAdminHRReadOnly])
@@ -134,6 +167,36 @@ def project_list(request):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+# Project Detail API
+@api_view(['GET', 'PUT', 'DELETE'])
+@permission_classes([IsAdminHRReadOnly])
+def project_detail(request, pk):
+
+    project = get_object_or_404(Project, pk=pk)
+
+    if request.method == 'GET':
+        serializer = ProjectSerializer(project)
+        return Response(serializer.data)
+
+    elif request.method == 'PUT':
+        serializer = ProjectSerializer(
+            project,
+            data=request.data
+        )
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+
+        return Response(
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    elif request.method == 'DELETE':
+        project.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 #user registration   
@@ -158,3 +221,12 @@ def register_user(request):
         serializer.errors,
         status=status.HTTP_400_BAD_REQUEST
     )
+    
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def test_auth(request):
+    return Response({
+        'message': 'Authentication successful',
+        'username': request.user.username,
+        'user_id': request.user.id,
+    })
