@@ -56,47 +56,157 @@ def department_detail(request, pk):
         )
         
 #employee CRUD API
+# @api_view(['GET', 'POST'])
+# @permission_classes([IsAdminHRReadOnly])
+# def employee_list(request):
+#     if request.method == 'GET':
+#         employees = Employee.objects.select_related('department').all()
+#         serializer = EmployeeSerializer(employees, many=True)
+#         return Response(serializer.data)
+    
+#     elif request.method == 'POST':
+#         serializer = EmployeeSerializer(data=request.data)
+#         if serializer.is_valid():
+#             serializer.save()
+#             return Response(serializer.data, status=status.HTTP_201_CREATED)
+        
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
 @api_view(['GET', 'POST'])
 @permission_classes([IsAdminHRReadOnly])
 def employee_list(request):
+
     if request.method == 'GET':
-        employees = Employee.objects.select_related('department').all()
+
+        user = request.user
+
+        if user.is_superuser:
+            employees = Employee.objects.select_related(
+                'department'
+            ).all()
+
+        elif user.user_profile.role in ['ADMIN', 'HR']:
+            employees = Employee.objects.select_related(
+                'department'
+            ).all()
+
+        else:
+            profile = user.user_profile
+
+            if profile.employee is None:
+                return Response(
+                    {'error': 'No employee record linked to this account'},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+
+            employees = Employee.objects.select_related(
+                'department'
+            ).filter(id=profile.employee.id)
+
         serializer = EmployeeSerializer(employees, many=True)
         return Response(serializer.data)
-    
+
     elif request.method == 'POST':
+
         serializer = EmployeeSerializer(data=request.data)
+
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+            return Response(
+                serializer.data,
+                status=status.HTTP_201_CREATED
+            )
+
+        return Response(
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
     
 #employee detail API:
+# @api_view(['GET', 'PUT', 'DELETE'])
+# @permission_classes([IsAdminHRReadOnly])
+# def employee_detail(request, pk):
+#     employee = get_object_or_404(Employee, pk=pk)
+    
+#     if request.method == 'GET':
+#         serializer = EmployeeSerializer(employee)
+#         return Response(serializer.data)
+    
+#     elif request.method == 'PUT':
+#         serializer = EmployeeSerializer(employee, data=request.data)
+        
+#         if serializer.is_valid():
+#             serializer.save()
+#             return Response(serializer.data)
+        
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+#     elif request.method == 'DELETE':
+#         employee.delete()
+#         return Response(
+#             {'message': 'Employee deleted successfully'},
+#             status=status.HTTP_200_OK
+#         )
+
+
 @api_view(['GET', 'PUT', 'DELETE'])
 @permission_classes([IsAdminHRReadOnly])
 def employee_detail(request, pk):
-    employee = get_object_or_404(Employee, pk=pk)
-    
+
+    user = request.user
+
+    if user.is_superuser:
+        employee = get_object_or_404(Employee, pk=pk)
+
+    elif user.user_profile.role in ['ADMIN', 'HR']:
+        employee = get_object_or_404(Employee, pk=pk)
+
+    else:
+        profile = user.user_profile
+
+        if profile.employee is None:
+            return Response(
+                {'error': 'No employee record linked to this account'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        employee = get_object_or_404(
+            Employee,
+            pk=pk,
+            id=profile.employee.id
+        )
+
     if request.method == 'GET':
         serializer = EmployeeSerializer(employee)
         return Response(serializer.data)
-    
+
     elif request.method == 'PUT':
-        serializer = EmployeeSerializer(employee, data=request.data)
-        
+        serializer = EmployeeSerializer(
+            employee,
+            data=request.data
+        )
+
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
-        
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+
+        return Response(
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
     elif request.method == 'DELETE':
         employee.delete()
+
         return Response(
             {'message': 'Employee deleted successfully'},
             status=status.HTTP_200_OK
         )
+
         
 #employee profile API (one-to-one)
 @api_view(['GET', 'POST'])
